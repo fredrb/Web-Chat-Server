@@ -9,12 +9,17 @@ let connectionPool = [];
 
 server.on('connection', (ws) => {
 
+  function broadcast(json) {
+    console.log(`Broadcasing message: ${JSON.stringify(json)}`);
+    debugger;
+    connectionPool.forEach(socket => {
+      if (socket !== ws) {
+        socket.send(JSON.stringify(json));
+      }
+    });
+  }
+
   connectionPool.push(ws);
-  let bot = setInterval(() => ws.send(JSON.stringify({
-    "method": "message",
-    "data" : "Test data!",
-    "sender" : "Some dude"
-  })), 3000);
 
   ws.on('message', function incoming(message) {
     let parsed = JSON.parse(message);
@@ -22,17 +27,27 @@ server.on('connection', (ws) => {
     switch (parsed.method) {
       case 'message':
         console.log(`${parsed.data}`);
+        broadcast({
+          "method" : "message",
+          "data" : parsed.data,
+          "sender" : parsed.sender
+        });
         break;
       case 'name' :
         ws.username = parsed.data;
+        broadcast({
+          "method" : "joined",
+          "data" : ws.username
+        })
     }
-
   });
 
   ws.on('close', function() {
-    clearInterval(bot);
+    broadcast({
+      "method" : "left",
+      "data" : ws.username
+    })
   });
-
 
 });
 
