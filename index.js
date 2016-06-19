@@ -10,13 +10,21 @@ let connectionPool = [];
 server.on('connection', (ws) => {
 
   connectionPool.push(ws);
-  let bot = setInterval(() => ws.send("TESTING"), 3000);
+  let bot = setInterval(() => ws.send(JSON.stringify({
+    "method": "message",
+    "data" : "Test data!",
+    "sender" : "Some dude"
+  })), 3000);
 
   ws.on('message', function incoming(message) {
     let parsed = JSON.parse(message);
 
-    if (parsed.method === 'message') {
-      console.log(`${parsed.message}`);
+    switch (parsed.method) {
+      case 'message':
+        console.log(`${parsed.data}`);
+        break;
+      case 'name' :
+        ws.username = parsed.data;
     }
 
   });
