@@ -18,6 +18,15 @@ server.on('connection', (ws) => {
     });
   }
 
+  function socketToList() {
+    var names = [];
+    connectionPool.forEach(function(s) {
+      if (s !== ws)
+        names.push(s.username);
+    });
+    return names;
+  }
+
   connectionPool.push(ws);
 
   ws.on('message', function incoming(message) {
@@ -34,6 +43,10 @@ server.on('connection', (ws) => {
         break;
       case 'name' :
         ws.username = parsed.data;
+        ws.send(JSON.stringify({
+          "method" : "name_list",
+          "data" : socketToList()
+        }));
         broadcast({
           "method" : "joined",
           "data" : ws.username
