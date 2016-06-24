@@ -11,7 +11,6 @@ server.on('connection', (ws) => {
 
   function broadcast(json) {
     console.log(`Broadcasing message: ${JSON.stringify(json)}`);
-    debugger;
     connectionPool.forEach(socket => {
       if (socket !== ws) {
         socket.send(JSON.stringify(json));
